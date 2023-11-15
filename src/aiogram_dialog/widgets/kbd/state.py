@@ -117,6 +117,7 @@ class Cancel(EventProcessorButton):
             result: Any = None,
             on_click: Optional[OnClick] = None,
             when: WhenCondition = None,
+            with_message: bool = False
     ):
         super().__init__(
             text=text, on_click=self._on_click,
@@ -125,6 +126,7 @@ class Cancel(EventProcessorButton):
         self.text = text
         self.result = result
         self.user_on_click = on_click
+        self.with_message = with_message
 
     async def _on_click(
             self, callback: CallbackQuery, button: Button,
@@ -132,7 +134,8 @@ class Cancel(EventProcessorButton):
     ):
         if self.user_on_click:
             await self.user_on_click(callback, self, manager)
-        await manager.done(self.result)
+        await manager.done(self.result,
+                           self.with_message)
 
 
 class Start(EventProcessorButton):

@@ -140,18 +140,32 @@ class ManagerImpl(DialogManager):
         )
         self.current_stack().last_message_id = None
 
+    async def _remove_message_safe(self) -> None:
+        if self.current_stack().last_message_id is None:
+            return
+        await self.message_manager.remove_message_safe(
+                self._data["bot"],
+                self._get_last_message,
+        )
+        self.current_stack().last_message_id = None
+
     async def _process_last_dialog_result(
             self,
             start_data: Data,
             result: Any,
+            with_message: bool
     ) -> None:
         """Process closing last dialog in stack."""
+        if with_message:
+            await self._remove_message_safe()
+            return
         await self._remove_kbd()
 
     async def done(
             self,
             result: Any = None,
             show_mode: Optional[ShowMode] = None,
+            with_message: bool = False
     ) -> None:
         self.check_disabled()
         await self.dialog().process_close(result, self)
@@ -162,6 +176,7 @@ class ManagerImpl(DialogManager):
             await self._process_last_dialog_result(
                 old_context.start_data,
                 result,
+                with_message
             )
             return
         dialog = self.dialog()
